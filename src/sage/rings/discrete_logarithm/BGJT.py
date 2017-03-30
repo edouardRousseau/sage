@@ -1,6 +1,7 @@
 r"""
 Experimental file for discrete logarithm.
 
+The algorithm is due to Barbulescu, Gaudry, Joux and Thomé.
 """
 
 #*****************************************************************************
@@ -12,6 +13,8 @@ Experimental file for discrete logarithm.
 #*****************************************************************************
 
 from sage.ext.sage_object import SageObject
+from sage.rings.polynomial import *
+from sage.rings.finite_rings import finite_field_constructor
 
 class smsrField(SageObject):
     """
@@ -24,10 +27,11 @@ class smsrField(SageObject):
         self._extensionDegree = k
         self._mediumSubField = GF(q^2, "x")
         
-        b = True
-        FT.<T> = PolynomialRing(self.medium_subfield(),"T")
+        boo = True
+        FT = PolynomialRing(self.medium_subfield(),"T")
+        T = FT.gen()
         
-        while b:
+        while boo:
             h0, h1 = FT.random_element(), FT.random_element(degree = 1) + T^2
             for f in factor(h1*T^q - h0):
                 if (f[0].degree() == k):
