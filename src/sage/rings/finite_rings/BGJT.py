@@ -1,7 +1,6 @@
 r"""
 Experimental file for discrete logarithm.
-
-The algorithm is due to Barbulescu, Gaudry, Joux and Thomé.
+The algorithm is due to Barbulescu, Gaudry, Joux and Thome.
 """
 
 #*****************************************************************************
@@ -11,11 +10,52 @@ The algorithm is due to Barbulescu, Gaudry, Joux and Thomé.
 # (at your option) any later version.
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
+from __future__ import absolute_import
 
 from sage.structure.sage_object import SageObject
-from sage.rings.polynomial import *
-from sage.rings.finite_rings import *
-from sage.matrix import *
+
+# Ring base classes
+from sage.rings.ring import (Ring, Field, CommutativeRing, IntegralDomain, DedekindDomain, PrincipalIdealDomain, EuclideanDomain)
+
+# Ring element base classes
+from sage.structure.element import (CommutativeAlgebraElement,
+    RingElement, CommutativeRingElement,
+    IntegralDomainElement,
+    DedekindDomainElement,
+    PrincipalIdealDomainElement,
+    EuclideanDomainElement, FieldElement)
+
+# Ideals
+from sage.rings.ideal import Ideal
+ideal = Ideal
+
+# Quotient
+from sage.rings.quotient_ring import QuotientRing
+
+# Rational integers.
+from sage.rings.integer_ring import IntegerRing, ZZ, crt_basis
+from sage.rings.integer import Integer
+
+# Rational numbers
+from sage.rings.rational_field import RationalField, QQ
+from sage.rings.rational import Rational
+Rationals = RationalField
+
+# Integers modulo n.
+from sage.rings.finite_rings.integer_mod_ring import IntegerModRing, Zmod
+from sage.rings.finite_rings.integer_mod import IntegerMod, Mod, mod
+Integers = IntegerModRing
+
+# Finite fields
+from sage.rings.finite_rings.all import *
+
+# Univariate Polynomial Rings
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.rings.polynomial.polynomial_ring import polygen, polygens
+from sage.rings.polynomial.polynomial_element import Polynomial
+
+# Matrices
+from sage.matrix.constructor import Matrix
 
 class smsrField(SageObject):
     """
@@ -26,17 +66,17 @@ class smsrField(SageObject):
     def __init__(self, q, k):
         self._characteristic = q
         self._extensionDegree = k
-        self._mediumSubField = FiniteField(q^2, "x")
+        self._mediumSubField = FiniteField(q**2, "x")
         
         boo = True
         FT = PolynomialRing(self.medium_subfield(),"T")
         T = FT.gen()
         
         while boo:
-            h0, h1 = FT.random_element(), FT.random_element(degree = 1) + T^2
-            for f in factor(h1*T^q - h0):
+            h0, h1 = FT.random_element(), FT.random_element(degree = 1) + T**2
+            for f in (h1*T**q - h0).factor():
                 if (f[0].degree() == k):
-                    b = False
+                    boo = False
                     self._definingPolynomial = f[0]
                     self._h0 = h0
                     self._h1 = h1
@@ -45,14 +85,14 @@ class smsrField(SageObject):
         self._bigField = self.medium_subfield().extension(self.defining_polynomial())
         
         self._gen = self.field().random_element()
-        if (self.cardinality() - 1 < 10^50):
+        if (self.cardinality() - 1 < 10**50):
             boo = True
-            fact = factor(self.cardinality() - 1) # not polynomial, hard
+            fact = (self.cardinality() - 1).factor() # not polynomial, hard
             while boo:
                 boo = False
                 for f in fact:
                     exp = (self.cardinality() - 1)/f[0]
-                    if (self._gen^exp).is_one():
+                    if (self._gen**exp).is_one():
                         boo = True
                         break
                 if boo:
@@ -77,7 +117,7 @@ class smsrField(SageObject):
         return self._definingPolynomial
     
     def cardinality(self):
-        return self.characteristic()^(2*self.extension_degree())
+        return self.characteristic()**(2*self.extension_degree())
     
     def field(self):
         return self._bigField
@@ -142,15 +182,15 @@ def dlsf(elem, K):
         gen : generator of `F_{q^(2k)}^*`
     """
     
-    qq = K.characteristic()^2
+    qq = K.characteristic()**2
     k = K.extension_degree()
     gen = K.gen()
     
-    c = (qq^k - 1)/(qq - 1)
-    n = gen^c # n = gen.norm()
+    c = (qq**k - 1)/(qq - 1)
+    n = gen**c # n = gen.norm()
     
     i = 1
-    while (n^i != elem):
+    while (n**i != elem):
         i = i + 1
     
     return i*c
@@ -166,7 +206,7 @@ def isSmooth(P, D):
     
     d = ceil(D/2)
     
-    for f in factor(P):
+    for f in P.factor():
         if (f[0].degree() > d):
             return False
     
@@ -193,7 +233,7 @@ def pgl2(F):
     return L
 
 def isConjugate(A, B, K):
-    M = B^(-1)*A
+    M = B**(-1)*A
     a = M[0, 0]
     q = K.characteristic()
     Fq = FiniteField(q)
@@ -203,13 +243,13 @@ def isConjugate(A, B, K):
         d = M[1, 1]/a
         if ((d-b*c != 0) and (b in Fq) and (c in Fq) and (d in Fq)):
             return True
-        else:
-            a = M[0,1]
-            if (a != 0):
-                b = M[1, 0]/a
-                c = M[1, 1]/a
-                if ((b != 0) and (b in Fq) and (c in Fq)):
-                    return True
+    else:
+        a = M[0,1]
+        if (a != 0):
+            b = M[1, 0]/a
+            c = M[1, 1]/a
+            if ((b != 0) and (b in Fq) and (c in Fq)):
+                return True
     return False
 
 def constructPq(K):
@@ -217,7 +257,7 @@ def constructPq(K):
     PGL = pgl2(K.medium_subfield())
     q = K.characteristic()
     for i in range(len(PGL)):
-        if (len(L) == q^3 + q):
+        if (len(L) == q**3 + q):
             break
         else:
             boo = True
@@ -235,7 +275,7 @@ def descent(L, i0, K):
     The descent corresponding to the BGJT algorithm.
     
     INPUT::
-        P : element of F_q²[T] (a polynomial !), in order to
+        P : element of F_q^2[T] (a polynomial !), in order to
         have the functions factors, degree, subs that do not
         exist in the quotient ring.
     """
@@ -245,7 +285,7 @@ def descent(L, i0, K):
     S = list()
     F = K.medium_subfield()
     q = K.characteristic()
-    M = Matrix(ZZ, q^3+q, q^2+1)
+    M = Matrix(ZZ, q**3+q, q**2+1)
     lambdas = list()
     Fq = FiniteField(q)
     P1Fq = P1(Fq)
@@ -255,16 +295,15 @@ def descent(L, i0, K):
     
     for m in Pq:
         a, b, c, d = m[0,0], m[0,1], m[1,0], m[1,1]
-        Ptilde = P.parent()([coef^q for coef in P])
+        Ptilde = P.parent()([coef**q for coef in P])
 
-        J = ( a^q * Ptilde.subs(K.h0()/K.h1()) + b^q )(c*P + d) - (a*P + b)*(c^q * Ptilde.subs(K.h0()/K.h1()) + d^q )
-        # ã = a^q, ~b = b^q, ~P is P with all coefficients power q
+        J = ( a**q * Ptilde.subs(K.h0()/K.h1()) + b**q )(c*P + d) - (a*P + b)*(c**q * Ptilde.subs(K.h0()/K.h1()) + d**q )
 
-        N = K.h1()^D*J
+        N = K.h1()**D*J
 
         if isSmooth(N, D): # We have to find the factors of N_m here
             unit = 1
-            for i in range(q^2+1):
+            for i in range(q**2+1):
                 alpha = a*P1Fq2[i][0] + b*P1Fq2[i][1]
                 beta = c*P1Fq2[i][0] + d*P1Fq2[i][1]
                 
@@ -281,27 +320,27 @@ def descent(L, i0, K):
                 else:
                     unit = unit*(-d*P1Fq2[i][0] + b*P1Fq2[i][1])
             
-            lambdas.append(unit^(-1))
+            lambdas.append(unit**(-1))
             
             j = j + 1
             S.append(N)
 
     # We assume (heuristic) that M has full rank
 
-    z = MatrixSpace(ZZ, 1, q^2+1)()
+    z = MatrixSpace(ZZ, 1, q**2+1)()
     z[0,0] = 1
 #    print(M.str())
     sol = M.solve_left(z)
     
-    for i in range(q^3 + q):
+    for i in range(q**3 + q):
         if (sol[i] != 0):
-            fact = factor(S[i])
+            fact = S[i].factor()
             for (f,e) in fact:
                 L.append(f, e*sol[i]*coef) 
                 L.append(K.h1(), D*sol[i]*coef) 
                 L.remove(i0)
                 
-            L.modify_unit((fact.unit()*lambdas[i])^(sol[i]*coef))
+            L.modify_unit((fact.unit()*lambdas[i])**(sol[i]*coef))
 
 def linearDict(Log, K):
     """
@@ -310,7 +349,7 @@ def linearDict(Log, K):
     """
     F = K.medium_subfield()
     q = K.characteristic()
-    M = Matrix(Zmod(K.cardinality() - 1), q^3+q, q^2+2) # +2 because of h1
+    M = Matrix(Zmod(K.cardinality() - 1), q**3+q, q**2+2) # +2 because of h1
     lambdas = list()
     Fq = FiniteField(q)
     P1Fq = P1(Fq)
@@ -322,13 +361,13 @@ def linearDict(Log, K):
     for m in Pq:
         a, b, c, d = m[0,0], m[0,1], m[1,0], m[1,1]
 
-        J = ( a^q *(K.h0()/K.h1()) + b^q )(c*X + d) - (a*X + b)*(c^q *K.h0()/K.h1() + d^q )
+        J = ( a**q *(K.h0()/K.h1()) + b**q )(c*X + d) - (a*X + b)*(c**q *K.h0()/K.h1() + d**q )
 
         N = K.h1()*J
 
         if isSmooth(N, 1): # We have to find the factors of N_m here
             unit = 1
-            for i in range(q^2+1):
+            for i in range(q**2+1):
                 alpha = a*P1Fq2[i][0] + b*P1Fq2[i][1]
                 beta = c*P1Fq2[i][0] + d*P1Fq2[i][1]
                 
@@ -345,26 +384,26 @@ def linearDict(Log, K):
                 else:
                     unit = unit*(-d*P1Fq2[i][0] + b*P1Fq2[i][1])
             
-            fact = factor(N)
-            lambdas.append(fact.unit()*unit^(-1))
+            fact = N.factor() 
+            lambdas.append(fact.unit()*unit**(-1))
             for f, e in fact:
                 i = P1Fq2.index((f[0],1))
                 M[j, i] = M[j, i] - e
             
-            M[j, q^2 + 1] = 1
+            M[j, q**2 + 1] = 1
             j = j + 1
 
     # We assume (heuristic) that M has full rank
 
-    z = MatrixSpace(Zmod(K.cardinality() - 1), 1, q^2+2)()
-    for i in range(q^2 + 2):
+    z = MatrixSpace(Zmod(K.cardinality() - 1), 1, q**2+2)()
+    for i in range(q**2 + 2):
         z[0,i] = dlsf(lambdas[i], K)
     sol = M.solve_left(z)
     
     j = 0
     for s in sol:
         if (s != 0):
-            if (j==q^2):
+            if (j==q**2):
                 Log[K.h1()] = s
                 break
             Log[X + P1Fq2[j][0]] = s
