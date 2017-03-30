@@ -15,6 +15,7 @@ The algorithm is due to Barbulescu, Gaudry, Joux and Thomé.
 from sage.ext.sage_object import SageObject
 from sage.rings.polynomial import *
 from sage.rings.finite_rings import finite_field_constructor
+from sage.matrix import *
 
 class smsrField(SageObject):
     """
