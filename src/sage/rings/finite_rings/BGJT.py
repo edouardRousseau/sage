@@ -12,9 +12,9 @@ The algorithm is due to Barbulescu, Gaudry, Joux and Thomé.
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-from sage.ext.sage_object import SageObject
+from sage.structure.sage_object import SageObject
 from sage.rings.polynomial import *
-from sage.rings.finite_rings import finite_field_constructor
+from sage.rings.finite_rings import *
 from sage.matrix import *
 
 class smsrField(SageObject):
@@ -26,7 +26,7 @@ class smsrField(SageObject):
     def __init__(self, q, k):
         self._characteristic = q
         self._extensionDegree = k
-        self._mediumSubField = GF(q^2, "x")
+        self._mediumSubField = FiniteField(q^2, "x")
         
         boo = True
         FT = PolynomialRing(self.medium_subfield(),"T")
@@ -196,7 +196,7 @@ def isConjugate(A, B, K):
     M = B^(-1)*A
     a = M[0, 0]
     q = K.characteristic()
-    Fq = GF(q)
+    Fq = FiniteField(q)
     if (a != 0):
         b = M[0,1]/a
         c = M[1, 0]/a
@@ -247,7 +247,7 @@ def descent(L, i0, K):
     q = K.characteristic()
     M = Matrix(ZZ, q^3+q, q^2+1)
     lambdas = list()
-    Fq = GF(q)
+    Fq = FiniteField(q)
     P1Fq = P1(Fq)
     P1Fq2 = P1(F)
     j = 0
@@ -312,7 +312,7 @@ def linearDict(Log, K):
     q = K.characteristic()
     M = Matrix(Zmod(K.cardinality() - 1), q^3+q, q^2+2) # +2 because of h1
     lambdas = list()
-    Fq = GF(q)
+    Fq = FiniteField(q)
     P1Fq = P1(Fq)
     P1Fq2 = P1(F)
     j = 0

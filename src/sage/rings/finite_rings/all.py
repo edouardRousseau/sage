@@ -21,4 +21,5 @@ from __future__ import absolute_import
 
 from .finite_field_constructor import FiniteField
 from .conway_polynomials import conway_polynomial, exists_conway_polynomial
+from .BGJT import *
 GF = FiniteField
