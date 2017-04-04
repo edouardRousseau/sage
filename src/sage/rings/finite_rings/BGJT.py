@@ -55,7 +55,7 @@ from sage.rings.polynomial.polynomial_ring import polygen, polygens
 from sage.rings.polynomial.polynomial_element import Polynomial
 
 # Matrices
-from sage.matrix.constructor import Matrix
+#from sage.matrix.constructor import Matrix
 
 class smsrField(SageObject):
     """
@@ -297,7 +297,7 @@ def descent(L, i0, K):
         a, b, c, d = m[0,0], m[0,1], m[1,0], m[1,1]
         Ptilde = P.parent()([coef**q for coef in P])
 
-        J = ( a**q * Ptilde.subs(K.h0()/K.h1()) + b**q )(c*P + d) - (a*P + b)*(c**q * Ptilde.subs(K.h0()/K.h1()) + d**q )
+        J = ( a**q * Ptilde.subs(K.h0()/K.h1()) + b**q )*(c*P + d) - (a*P + b)*(c**q * Ptilde.subs(K.h0()/K.h1()) + d**q )
 
         N = K.h1()**D*J
 
@@ -361,7 +361,7 @@ def linearDict(Log, K):
     for m in Pq:
         a, b, c, d = m[0,0], m[0,1], m[1,0], m[1,1]
 
-        J = ( a**q *(K.h0()/K.h1()) + b**q )(c*X + d) - (a*X + b)*(c**q *K.h0()/K.h1() + d**q )
+        J = ( a**q *(K.h0()/K.h1()) + b**q )*(c*X + d) - (a*X + b)*(c**q *K.h0()/K.h1() + d**q )
 
         N = K.h1()*J
 
