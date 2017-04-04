@@ -55,7 +55,7 @@ from sage.rings.polynomial.polynomial_ring import polygen, polygens
 from sage.rings.polynomial.polynomial_element import Polynomial
 
 # Matrices
-#from sage.matrix.constructor import Matrix
+from sage.matrix.constructor import Matrix
 
 class smsrField(SageObject):
     """
